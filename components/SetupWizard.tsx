@@ -223,7 +223,7 @@ export default function SetupWizard() {
               </p>
             </div>
 
-            <div className="grid max-w-md gap-4">
+            <div className="grid w-full gap-4">
               <div>
                 <label className="label" htmlFor="setup-username">
                   ชื่อผู้ใช้ (a-z A-Z 0-9 _ . - ยาว 3-32 ตัวอักษร)
