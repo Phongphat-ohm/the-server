@@ -1,0 +1,26 @@
+import fs from 'node:fs'
+
+// โหลดไฟล์ .env แบบพื้นฐาน (ไม่ใช้ dependency เพิ่ม) — ใช้ค่าจาก env จริงเป็นหลักเสมอ
+try {
+  if (fs.existsSync('.env')) {
+    for (const line of fs.readFileSync('.env', 'utf8').split(/\r?\n/)) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eq = trimmed.indexOf('=')
+      if (eq <= 0) continue
+      const key = trimmed.slice(0, eq).trim()
+      let value = trimmed.slice(eq + 1).trim()
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1)
+      }
+      if (key && process.env[key] === undefined) process.env[key] = value
+    }
+  }
+} catch {
+  // ถ้าอ่าน .env ไม่ได้ก็ทำงานต่อด้วยค่าจาก process.env ตรง ๆ
+}
+
+export {}

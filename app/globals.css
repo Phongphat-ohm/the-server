@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: #06080f;
+  color: #e6edf6;
+  font-family: 'Segoe UI', 'Noto Sans Thai', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* ---------- คลาส UI พื้นฐาน ---------- */
+
+.card {
+  background: rgba(15, 20, 32, 0.85);
+  border: 1px solid #1f2a3d;
+  border-radius: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 10px;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #26334a;
+  background: #141c2b;
+  color: #dbe6f5;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: #1b2536;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #16a34a;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #128a41;
+}
+
+.btn-danger {
+  background: #b91c1c;
+  border-color: #991b1b;
+  color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+.input {
+  width: 100%;
+  background: #0b1220;
+  border: 1px solid #26334a;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #e6edf6;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #2f81f7;
+  box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.15);
+}
+
+.input::placeholder {
+  color: #4b5b74;
+}
+
+select.input option {
+  background: #0b1220;
+}
+
+.label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8ba3c2;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.02em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* ---------- แถบเลื่อน (scrollbar) ---------- */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #22304a;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2d3f60;
+}
+
+/* ---------- แถบ progress แบบไม่ระบุ % ---------- */
+
+.progress-indeterminate {
+  position: relative;
+  overflow: hidden;
+  background: #0b1220;
+  border: 1px solid #26334a;
+  border-radius: 999px;
+  height: 10px;
+}
+
+.progress-indeterminate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, #15803d, #22c55e);
+  border-radius: 999px;
+  animation: indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "bds-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minecraft Bedrock Dedicated Server Dashboard — Next.js + Custom Node.js Server (HTTP + WebSocket) in a single process",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development NEXT_TELEMETRY_DISABLED=1 tsx watch server.ts",
+    "build": "cross-env NEXT_TELEMETRY_DISABLED=1 next build",
+    "start": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 tsx server.ts",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke-test.mjs"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "adm-zip": "^0.5.16",
+    "better-sqlite3": "^12.2.0",
+    "cross-env": "^7.0.3",
+    "drizzle-orm": "^0.44.2",
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "systeminformation": "^5.27.0",
+    "tsx": "^4.19.0",
+    "tailwindcss": "^4.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/ws": "^8.18.0",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.8.0"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true,
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+.next/
+data/
+server_data/
+drizzle/
+*.log
+.env
+.DS_Store
