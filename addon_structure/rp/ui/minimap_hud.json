@@ -1,0 +1,642 @@
+{
+    "namespace": "minimap_hud",
+
+    "hud_data": {
+		"type": "panel",
+		"size": [ 0, 0 ],
+		"controls": [
+			{
+				"mm_render_0": {
+					"type": "panel",
+					"size": [ 0, 0 ],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui",
+							"binding_name_override": "#survival_ui"
+						},
+						{
+							"binding_name": "#paper_doll_visible"
+						},
+						{
+							"binding_name": "#hud_title_text_string"
+						},
+						{
+							"binding_name": "#hud_subtitle_text_string"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "('%.5s' * #stored_text)",
+						  "target_property_name": "#variable_data"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "(#variable_data - ('%.4s' * #stored_text))",
+						  "target_property_name": "#direction"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "(('%.1s' * #stored_text) = 'a')",
+						  "target_property_name": "#normal_size"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "((('%.2s' * #stored_text) - ('%.1s' * #stored_text)) = 'c')",
+						  "target_property_name": "#round_map"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "((('%.3s' * #stored_text) - ('%.2s' * #stored_text)) = 'b')",
+						  "target_property_name": "#is_sneaking"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "(('%.4s' * #stored_text) - ('%.3s' * #stored_text))",
+						  "target_property_name": "#render_scale"
+						},
+						{
+							"binding_name": "#hud_title_text_string",
+							"binding_name_override": "#stored_text",
+							"binding_condition": "visible"
+						},
+						{
+							"binding_name": "#hud_subtitle_text_string",
+							"binding_name_override": "#compass",
+							"binding_condition": "visible"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "((#stored_text - 'mm_render_0') - #variable_data)",
+						  "target_property_name": "#minimap"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'mm_render_0') = #hud_title_text_string))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"mm_render_1": {
+					"type": "panel",
+					"size": [ 0, 0 ],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui",
+							"binding_name_override": "#survival_ui"
+						},
+						{
+							"binding_name": "#hud_title_text_string"
+						},
+						{
+							"binding_name": "#hud_title_text_string",
+							"binding_name_override": "#stored_text",
+							"binding_condition": "visible"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "(('%.64s' * #stored_text) - '~')",
+						  "target_property_name": "#dimension_name"
+						},
+						{
+						  "binding_type": "view",
+						  "source_property_name": "((('%.128s' * #stored_text) - ('%.64s' * #stored_text)) - '~')",
+						  "target_property_name": "#biome_name"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'mm_render_1') = #hud_title_text_string))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"minimap_visibility": {
+					"type": "panel",
+					"size": [ 0, 0 ],
+					"$bindings": [
+						{
+							"binding_name": "#paper_doll_visible"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#round_map",
+							"target_property_name": "#round_map"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#normal_size",
+							"target_property_name": "#normal_size"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#is_sneaking",
+							"target_property_name": "#is_sneaking"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "(not(#stored_text = ''))",
+							"target_property_name": "#is_loaded"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "#paper_doll_visible",
+							"target_property_name": "#minimap_visible"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#stored_text",
+							"target_property_name": "#stored_text"
+						}
+					],
+					"variables": [
+						{
+							"requires": "$touch",
+							"$bindings": [
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#round_map",
+									"target_property_name": "#round_map"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#normal_size",
+									"target_property_name": "#normal_size"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "(not(#stored_text = ''))",
+									"target_property_name": "#is_loaded"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "minimap_toggle", 
+									"source_property_name": "(not(#toggle_state))", 
+									"target_property_name": "#minimap_visible" 
+								}
+							]
+						},
+						{
+							"requires": "$mouse",
+							"$bindings": [
+								{
+									"binding_name": "#paper_doll_visible"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#round_map",
+									"target_property_name": "#round_map"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#normal_size",
+									"target_property_name": "#normal_size"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#is_sneaking",
+									"target_property_name": "#is_sneaking"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "(not(#stored_text = ''))",
+									"target_property_name": "#is_loaded"
+								},
+								{
+									"binding_name": "#paper_doll_visible",
+									"binding_name_override": "#minimap_visible_data",
+									"binding_condition": "visible"
+								},
+								{
+									"binding_type": "view",
+									"source_property_name": "(#minimap_visible_data and #is_loaded)",
+									"target_property_name": "#minimap_visible"
+								},
+								{
+									"binding_type": "view",
+									"source_control_name": "mm_render_0",
+									"source_property_name": "#stored_text",
+									"target_property_name": "#stored_text"
+								},
+								{
+									"binding_type": "view",
+									"source_property_name": "((#is_sneaking or #stored_text = '') and #paper_doll_visible)",
+									"target_property_name": "#visible"
+								}
+							]
+						}
+					],
+					"bindings": "$bindings"
+				}
+			}
+		]
+	},
+
+	"text_with_bd": {
+		"type": "panel",
+		"size": [ 64, "100%cm + 1px" ],
+		"controls": [
+			{
+				"text": {
+					"type": "label",
+					"text": "#text",
+					"font_scale_factor": 0.5,
+					"anchor_from": "top_middle",
+					"anchor_to": "top_middle",
+					"text_alignment": "center",
+					"controls": [
+						{
+							"bg": {
+								"type": "image",
+								"texture": "textures/ui/Black",
+								"alpha": 0.25,
+								"size": [ "100% + 4px", "100%" ],
+								"layer": -1
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "$source",
+							"source_property_name": "$source_id",
+							"target_property_name": "#text"
+						}
+					]
+				}
+			}
+		]
+	},
+
+	"minimap_renderer": {
+		"type": "label",
+		"text": "#minimap",
+		"line_padding": -1,
+		"font_size": "small",
+		"font_scale_factor": "#font_scale_factor",
+		"$divisor": 8.0,
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "mm_render_0",
+				"source_property_name": "($font_scale_factor * (#render_scale / $divisor))",
+				"target_property_name": "#font_scale_factor"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "mm_render_0",
+				"source_property_name": "#minimap",
+				"target_property_name": "#minimap"
+			}
+		]
+	},
+	
+	"minimap_render": {
+		"type": "panel",
+		"size": [ 73, 73 ],
+		"$font_scale_factor": 0.4,
+		"controls": [
+			{
+				"compass": {
+					"type": "label",
+					"text": "#text",
+					"line_padding": -1,
+					"font_scale_factor": 0.575,
+					"layer": 5,
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#compass",
+							"target_property_name": "#text"
+						}
+					]
+				}
+			},
+			{
+				"player_direction": {
+					"type": "image",
+					"texture": "#texture",
+					"allow_debug_missing_texture": false,
+					"size": [ 8, 8 ],
+					"layer": 4,
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "('textures/ui/minimap_direction_' + #direction)",
+							"target_property_name": "#texture"
+						}
+					]
+				}
+			},
+			{
+				"frame": {
+					"type": "image",
+					"texture": "$target",
+					"size": [ 73, 73 ],
+					"layer": 4
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0, -0.5]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0, -1]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0.5, -0.5]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0.5, -1]
+				}
+			},
+			{
+				"minimap_biome_identifier@minimap_hud.minimap_biome_identifier": {
+					"offset": [ 0, 4 ],
+					"anchor_from": "bottom_middle",
+					"anchor_to": "top_middle"
+				}
+			}
+		]
+	},
+	
+	"enlarge_minimap_render": {
+		"type": "panel",
+		"size": [ 169, 169 ],
+		"$font_scale_factor": 1,
+		"controls": [
+			{
+				"compass": {
+					"type": "label",
+					"text": "#text",
+					"line_padding": -1,
+					"font_scale_factor": 1.35,
+					"layer": 5,
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "#compass",
+							"target_property_name": "#text"
+						}
+					]
+				}
+			},
+			{
+				"player_direction": {
+					"type": "image",
+					"texture": "#texture",
+					"allow_debug_missing_texture": false,
+					"size": [ 8, 8 ],
+					"layer": 4,
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "mm_render_0",
+							"source_property_name": "('textures/ui/minimap_direction_' + #direction)",
+							"target_property_name": "#texture"
+						}
+					]
+				}
+			},
+			{
+				"frame": {
+					"type": "image",
+					"texture": "$target",
+					"size": [ 169, 169 ],
+					"layer": 4
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0, -0.5]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0, -1]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0.5, -0.5]
+				}
+			},
+			{
+				"minimap_renderer@minimap_hud.minimap_renderer": {
+					"offset": [ 0.5, -1]
+				}
+			},
+			{
+				"minimap_biome_identifier@minimap_hud.minimap_biome_identifier": {
+					"offset": [ 0, 4 ],
+					"anchor_from": "bottom_middle",
+					"anchor_to": "top_middle"
+				}
+			}
+		]
+	},
+
+	"minimap_generator": {
+		"type": "collection_panel",
+		"size": [ "100%c", "100%c" ],
+		
+		"collection_name": "minimap_generator",
+		"factory": {
+			"name": "minimap_generator_factory",
+			"control_name": "$container"
+		}
+	},
+
+	"minimap_icon_opened": {
+		"type": "image",
+		"texture": "textures/ui/minimap_opened",
+		"size": [ 18, 18 ]
+	},
+	"minimap_icon_opened_hover@minimap_hud.minimap_icon_opened": {
+		"texture": "textures/ui/minimap_opened_hover"
+	},
+	"minimap_icon_closed@minimap_hud.minimap_icon_opened": {
+		"texture": "textures/ui/minimap_closed"
+	},
+	"minimap_icon_closed_hover@minimap_hud.minimap_icon_opened": {
+		"texture": "textures/ui/minimap_closed_hover"
+	},
+
+	"minimap_toggle@common.checkbox": {
+        "focus_enabled": true,
+        "prevent_touch_input": true,
+    	"$button_content": "minimap_hud.minimap_button",
+		"$toggle_view_binding_name": "minimap_toggle",
+		"$toggle_name": "layout_toggle",
+		"$button_mappings": [
+			{
+				"from_button_id": "button.hide_paperdoll",
+				"to_button_id": "button.minimap_toggle",
+				"mapping_type": "global"
+			}
+		],
+		"size": [ 18, 18 ],
+		"layer": 4,
+		"$checked_control": "minimap_hud.minimap_icon_closed",
+		"$checked_hover_control": "minimap_hud.minimap_icon_closed",
+		"$unchecked_control": "minimap_hud.minimap_icon_opened",
+		"$unchecked_hover_control": "minimap_hud.minimap_icon_opened",
+		"$checked_locked_control": "minimap_hud.minimap_icon_closed",
+		"$checked_locked_hover_control": "minimap_hud.minimap_icon_closed",
+		"$unchecked_locked_control": "minimap_hud.minimap_icon_opened",
+		"$unchecked_locked_hover_control": "minimap_hud.minimap_icon_opened",
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "mm_render_0",
+				"source_property_name": "#is_sneaking",
+				"target_property_name": "#is_sneaking"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "minimap_toggle", 
+				"source_property_name": "#toggle_state", 
+				"target_property_name": "#is_closed" 
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "((#is_sneaking or #is_closed) and $touch)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+	
+	"minimap_biome_identifier": {
+		"type": "stack_panel",
+		"orientation": "vertical",
+		"size": [ 64, 16 ],
+		"controls": [
+			{
+				"dimension@minimap_hud.text_with_bd": {
+					"$source": "mm_render_1",
+					"$source_id": "#dimension_name"
+				}
+			},
+			{
+				"biome@minimap_hud.text_with_bd": {
+					"$source": "mm_render_1",
+					"$source_id": "#biome_name"
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "mm_render_1",
+				"source_property_name": "(not((#stored_text - 'mm_render_1') = ''))",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"root_panel": {
+		"type": "panel",
+		"controls": [
+			{
+				"hud_data@minimap_hud.hud_data": {}
+			},
+			{
+				"minimap_toggle@minimap_hud.minimap_toggle": {
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"offset": [ -18, 18 ]
+				}
+			},
+			{
+				"enlarge_minimap_render@minimap_hud.minimap_generator": {
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"offset": [ -12, 12 ],
+					"$target": "textures/ui/enlarge_minimap_frame",
+					"$container": "minimap_hud.enlarge_minimap_render",
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "minimap_visibility",
+							"source_property_name": "(1 * (not(#normal_size) and not(#round_map) and #minimap_visible))",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			},
+			{
+				"minimap_render@minimap_hud.minimap_generator": {
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"offset": [ -6, 6 ],
+					"$target": "textures/ui/minimap_frame",
+					"$container": "minimap_hud.minimap_render",
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "minimap_visibility",
+							"source_property_name": "(1 * (#normal_size and not(#round_map) and #minimap_visible))",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			},
+			{
+				"enlarge_minimap_render@minimap_hud.minimap_generator": {
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"offset": [ -12, 12 ],
+					"$target": "textures/ui/enlarge_minimap_frame_round",
+					"$container": "minimap_hud.enlarge_minimap_render",
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "minimap_visibility",
+							"source_property_name": "(1 * (#round_map and not(#normal_size) and #minimap_visible))",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			},
+			{
+				"minimap_render@minimap_hud.minimap_generator": {
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"offset": [ -6, 6 ],
+					"$target": "textures/ui/minimap_frame_round",
+					"$container": "minimap_hud.minimap_render",
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "minimap_visibility",
+							"source_property_name": "(1 * (#normal_size and #round_map and #minimap_visible))",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			}
+		]
+	}
+}

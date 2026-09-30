@@ -43,3 +43,17 @@ export function guard(
   if (!sameOrigin(req)) return jsonError(403, 'Origin ไม่ถูกต้อง')
   return null
 }
+
+/**
+ * ตรวจสอบสิทธิ์เฉพาะผู้ดูแลระบบ (Admin Only)
+ */
+export function guardAdmin(req: NextRequest): NextResponse | null {
+  const denied = guard(req)
+  if (denied) return denied
+
+  const user = getAuthUser(req)
+  if (user?.role !== 'admin') {
+    return jsonError(403, 'เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่มีสิทธิ์เข้าถึง')
+  }
+  return null
+}

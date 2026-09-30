@@ -36,6 +36,12 @@ export type InstallPhase =
   | 'done'
   | 'error'
 
+export interface ExtractProgress {
+  extracted: number
+  total: number
+  percent: number
+}
+
 export interface InstallJob {
   id: string
   version: string
@@ -43,15 +49,28 @@ export interface InstallJob {
   phase: InstallPhase
   receivedBytes: number
   totalBytes: number | null
+  extractProgress?: ExtractProgress | null
   error: string | null
   startedAt: number
   finishedAt: number | null
+  freshInstall?: boolean
 }
 
 export interface QuickMachineStats {
   cpuLoadPct: number | null
   memTotalGb: number | null
   memFreeGb: number | null
+}
+
+export interface ConnectionInfo {
+  domain: string | null
+  serverPort: number
+  serverPortV6: number
+  serverName: string
+  localIps: string[]
+  publicIp: string | null
+  primaryHost: string
+  quickJoinUrl: string
 }
 
 export type WsServerMessage =

@@ -7,9 +7,19 @@ import { getDb } from './db'
 export const SESSION_COOKIE = 'bds_session'
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
+export type UserRole = 'admin' | 'operator'
+
 export interface SessionUser {
   id: number
   username: string
+  role: UserRole
+}
+
+export interface UserSummary {
+  id: number
+  username: string
+  role: UserRole
+  createdAt: number
 }
 
 export class ValidationError extends Error {}
@@ -44,24 +54,35 @@ export function validatePassword(password: string): string | null {
 }
 
 export function createAdmin(username: string, password: string): SessionUser {
+  return createUser(username, password, 'admin')
+}
+
+export function createUser(username: string, password: string, role: UserRole = 'operator'): SessionUser {
   const usernameError = validateUsername(username)
   if (usernameError) throw new ValidationError(usernameError)
   const passwordError = validatePassword(password)
   if (passwordError) throw new ValidationError(passwordError)
+
   const { sqlite } = getDb()
+  const existing = sqlite.prepare('SELECT id FROM users WHERE username = ?').get(username)
+  if (existing) {
+    throw new ValidationError(`ชื่อผู้ใช้ "${username}" มีอยู่ในระบบแล้ว`)
+  }
+
   const info = sqlite
-    .prepare('INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)')
-    .run(username, hashPassword(password), Date.now())
-  return { id: Number(info.lastInsertRowid), username }
+    .prepare('INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, ?)')
+    .run(username, hashPassword(password), role, Date.now())
+  return { id: Number(info.lastInsertRowid), username, role }
 }
 
 export function authenticate(username: string, password: string): SessionUser | null {
   const row = getDb().sqlite
-    .prepare('SELECT id, username, password_hash FROM users WHERE username = ?')
-    .get(username) as { id: number; username: string; password_hash: string } | undefined
+    .prepare('SELECT id, username, password_hash, role FROM users WHERE username = ?')
+    .get(username) as { id: number; username: string; password_hash: string; role?: string } | undefined
   if (!row) return null
   if (!verifyPassword(password, row.password_hash)) return null
-  return { id: row.id, username: row.username }
+  const role: UserRole = row.role === 'operator' ? 'operator' : 'admin'
+  return { id: row.id, username: row.username, role }
 }
 
 export function createSession(userId: number): { token: string; expiresAt: number } {
@@ -83,17 +104,18 @@ export function validateSessionToken(token: string): SessionUser | null {
   const { sqlite } = getDb()
   const row = sqlite
     .prepare(
-      'SELECT s.token, s.expires_at, u.id, u.username FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
+      'SELECT s.token, s.expires_at, u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
     )
     .get(token) as
-    | { token: string; expires_at: number; id: number; username: string }
+    | { token: string; expires_at: number; id: number; username: string; role?: string }
     | undefined
   if (!row) return null
   if (row.expires_at < Date.now()) {
     sqlite.prepare('DELETE FROM sessions WHERE token = ?').run(row.token)
     return null
   }
-  return { id: row.id, username: row.username }
+  const role: UserRole = row.role === 'operator' ? 'operator' : 'admin'
+  return { id: row.id, username: row.username, role }
 }
 
 export function deleteSession(token: string): void {
@@ -115,4 +137,73 @@ export function changePassword(userId: number, currentPassword: string, newPassw
   const passwordError = validatePassword(newPassword)
   if (passwordError) throw new ValidationError(passwordError)
   sqlite.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(newPassword), userId)
+}
+
+/** ดึงรายชื่อผู้ใช้ทั้งหมด (Admin Only) */
+export function listUsers(): UserSummary[] {
+  const { sqlite } = getDb()
+  const rows = sqlite
+    .prepare('SELECT id, username, role, created_at FROM users ORDER BY created_at ASC')
+    .all() as Array<{ id: number; username: string; role?: string; created_at: number }>
+
+  return rows.map((r) => ({
+    id: r.id,
+    username: r.username,
+    role: (r.role === 'operator' ? 'operator' : 'admin') as UserRole,
+    createdAt: r.created_at,
+  }))
+}
+
+/** อัปเดตสิทธิ์/บทบาทของผู้ใช้ */
+export function updateUserRole(userId: number, role: UserRole, currentAdminId: number): void {
+  const { sqlite } = getDb()
+  const target = sqlite.prepare('SELECT id, role FROM users WHERE id = ?').get(userId) as
+    | { id: number; role?: string }
+    | undefined
+  if (!target) throw new ValidationError('ไม่พบบัญชีผู้ใช้ที่ต้องการแก้ไข')
+
+  // หากเป็นตัวเอง และจะปลดตัวเองจาก admin ให้เช็คว่ามี admin คนอื่นเหลือไหม
+  if (userId === currentAdminId && role !== 'admin') {
+    const adminCount = sqlite.prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'").get() as { c: number }
+    if (adminCount.c <= 1) {
+      throw new ValidationError('ไม่สามารถเปลี่ยนบทบาทของตนเองได้ เนื่องจากไม่มีผู้ดูแลระบบ (Admin) อื่นเหลืออยู่ในระบบ')
+    }
+  }
+
+  sqlite.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId)
+}
+
+/** รีเซ็ตรหัสผ่านโดย Admin โดยตรง */
+export function adminResetPassword(userId: number, newPassword: string): void {
+  const passwordError = validatePassword(newPassword)
+  if (passwordError) throw new ValidationError(passwordError)
+  const { sqlite } = getDb()
+  const target = sqlite.prepare('SELECT id FROM users WHERE id = ?').get(userId)
+  if (!target) throw new ValidationError('ไม่พบบัญชีผู้ใช้ที่ต้องการรีเซ็ตรหัสผ่าน')
+
+  sqlite.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(newPassword), userId)
+  // ลบ session ของผู้ใช้นี้เพื่อให้ล็อกอินใหม่
+  sqlite.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId)
+}
+
+/** ลบบัญชีผู้ใช้ */
+export function deleteUser(userId: number, currentAdminId: number): void {
+  if (userId === currentAdminId) {
+    throw new ValidationError('ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้')
+  }
+  const { sqlite } = getDb()
+  const target = sqlite.prepare('SELECT id, role FROM users WHERE id = ?').get(userId) as
+    | { id: number; role?: string }
+    | undefined
+  if (!target) throw new ValidationError('ไม่พบบัญชีผู้ใช้ที่ต้องการลบ')
+
+  if (target.role === 'admin') {
+    const adminCount = sqlite.prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'").get() as { c: number }
+    if (adminCount.c <= 1) {
+      throw new ValidationError('ไม่สามารถลบผู้ดูแลระบบคนสุดท้ายของระบบได้')
+    }
+  }
+
+  sqlite.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId)
+  sqlite.prepare('DELETE FROM users WHERE id = ?').run(userId)
 }

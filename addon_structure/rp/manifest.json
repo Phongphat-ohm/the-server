@@ -1,0 +1,30 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Created by kamii",
+        "name": "Magnificent Minimap v1.7 Resource",
+        "uuid": "8462e046-7643-4372-b7a1-ca8522fbf138",
+        "version": [1, 7, 0],
+        "min_engine_version": [ 1, 17, 0 ]
+    },
+    "modules": [
+        {
+            "description": "Created by kamii",
+            "type": "resources",
+            "uuid": "b7be0630-d7e5-4a9a-be1f-8546e5256eab",
+            "version": [1, 7, 0]
+        }
+    ],
+    "dependencies": [
+        {
+            "uuid": "ab8cfdca-bb53-4d48-8cd3-3a38687fbf9a",
+            "version": [1, 7, 0]
+        }
+    ],
+    "metadata": {
+        "authors": [
+            "Kamii"
+        ],
+        "product_type": "addon"
+    }
+}

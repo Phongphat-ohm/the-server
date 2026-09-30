@@ -25,8 +25,16 @@ export async function POST(req: NextRequest) {
       results.push({ file: file.name, error: 'ชนิดไฟล์ไม่รองรับ (รองรับ .mcaddon / .mcpack / .zip)' })
       continue
     }
+    if (file.size === 0) {
+      results.push({ file: file.name, error: 'ไฟล์ที่อัปโหลดไม่มีข้อมูล (ขนาด 0 bytes)' })
+      continue
+    }
     try {
       const buffer = Buffer.from(await file.arrayBuffer())
+      if (buffer.length === 0) {
+        results.push({ file: file.name, error: 'อ่านข้อมูลไฟล์ล้มเหลว (ขนาดบัฟเฟอร์ 0 bytes)' })
+        continue
+      }
       results.push(await installAddonFromFile(buffer, file.name))
     } catch (err) {
       results.push({ file: file.name, error: err instanceof Error ? err.message : String(err) })

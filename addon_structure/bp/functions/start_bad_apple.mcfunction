@@ -1,0 +1,1 @@
+scriptevent mmap:bad_apple start

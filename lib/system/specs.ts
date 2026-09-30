@@ -1,3 +1,4 @@
+import os from 'node:os'
 import path from 'node:path'
 import si from 'systeminformation'
 import { SERVER_DIR } from '../paths'
@@ -51,17 +52,81 @@ function pickDisk(fsList: FsList, cwd: string): FsList[number] | null {
   return matches[0] ?? fsList[0]
 }
 
+// In-memory cache สำหรับฮาร์ดแวร์ที่ไม่เคยเปลี่ยน (CPU, OS Info, Static specs)
+interface StaticHardware {
+  cpu: { brand: string; cores: number; physicalCores: number; speedGhz: number }
+  osInfo: { distro: string; release: string; kernel: string }
+}
+let cachedHardware: StaticHardware | null = null
+let cachedFsList: { data: FsList; at: number } | null = null
+const FS_CACHE_TTL = 30_000 // แคชข้อมูลดิสก์ 30 วินาทีเพื่อไม่ต้องรัน WMI บ่อยๆ
+
+async function getOrFetchHardware(): Promise<StaticHardware> {
+  if (cachedHardware) return cachedHardware
+
+  try {
+    const [cpu, osInfo] = await Promise.race([
+      Promise.all([si.cpu(), si.osInfo()]),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('si timeout')), 2500)),
+    ])
+    cachedHardware = {
+      cpu: {
+        brand: `${cpu.manufacturer ?? ''} ${cpu.brand ?? ''}`.trim() || os.cpus()[0]?.model || 'Generic CPU',
+        cores: cpu.cores || os.cpus().length || 1,
+        physicalCores: cpu.physicalCores || Math.max(1, Math.floor(os.cpus().length / 2)),
+        speedGhz: Math.round((cpu.speed || (os.cpus()[0]?.speed ? os.cpus()[0].speed / 1000 : 2.0)) * 10) / 10,
+      },
+      osInfo: {
+        distro: osInfo.distro || os.type(),
+        release: osInfo.release || os.release(),
+        kernel: osInfo.kernel || os.version(),
+      },
+    }
+  } catch {
+    // Fallback ทันทีด้วย native node:os (0 ms) เมื่อ systeminformation ตอบช้าหรือค้าง
+    const cpus = os.cpus()
+    cachedHardware = {
+      cpu: {
+        brand: cpus[0]?.model || 'Standard CPU',
+        cores: cpus.length || 1,
+        physicalCores: Math.max(1, Math.floor(cpus.length / 2)),
+        speedGhz: Math.round(((cpus[0]?.speed ?? 2000) / 1000) * 10) / 10,
+      },
+      osInfo: {
+        distro: process.platform === 'win32' ? 'Windows' : os.type(),
+        release: os.release(),
+        kernel: os.version(),
+      },
+    }
+  }
+
+  return cachedHardware
+}
+
 export async function getSystemSpecs(): Promise<SystemSpecs> {
   const cwd = path.resolve(SERVER_DIR)
-  const [cpu, mem, osInfo, fsList] = await Promise.all([
-    si.cpu(),
-    si.mem(),
-    si.osInfo(),
-    si.fsSize().catch(() => [] as FsList),
-  ])
+  const hardware = await getOrFetchHardware()
+
+  // ดึงข้อมูลดิสก์พร้อมแคช 30 วิ (WMI ดิสก์บน Windows ช้ามาก 2-4 วินาที)
+  let fsList: FsList = []
+  if (cachedFsList && Date.now() - cachedFsList.at < FS_CACHE_TTL) {
+    fsList = cachedFsList.data
+  } else {
+    try {
+      fsList = await Promise.race([
+        si.fsSize(),
+        new Promise<FsList>((_, reject) => setTimeout(() => reject(new Error('fsSize timeout')), 2000)),
+      ])
+      cachedFsList = { data: fsList, at: Date.now() }
+    } catch {
+      fsList = cachedFsList?.data ?? []
+    }
+  }
+
   const diskInfo = pickDisk(fsList, cwd)
-  const totalGb = gb(mem.total)
-  const freeGb = gb(mem.available)
+  // ใช้ native os module สำหรับหน่วยความจำ (0 ms)
+  const totalGb = gb(os.totalmem())
+  const freeGb = gb(os.freemem())
   const diskFreeGb = diskInfo ? gb(diskInfo.available) : 0
 
   const checks: SpecCheck[] = []
@@ -71,7 +136,7 @@ export async function getSystemSpecs(): Promise<SystemSpecs> {
   checks.push({
     id: 'os',
     label: 'ระบบปฏิบัติการ',
-    value: `${osInfo.distro || process.platform} (${process.platform})`,
+    value: `${hardware.osInfo.distro} (${process.platform})`,
     status: platformOk ? 'pass' : process.platform === 'darwin' ? 'warn' : 'fail',
     note: platformOk
       ? 'Mojang เผยแพร่ไบนารีอย่างเป็นทางการ'
@@ -81,13 +146,13 @@ export async function getSystemSpecs(): Promise<SystemSpecs> {
   })
   score += platformOk ? 10 : process.platform === 'darwin' ? 5 : 0
 
-  const cores = cpu.cores ?? 1
+  const cores = hardware.cpu.cores
   const coresOk = cores >= 4
   const coresWarn = cores >= 2
   checks.push({
     id: 'cpu',
-    label: ' CPU (จำนวน Core)',
-    value: `${cores} threads / ${cpu.physicalCores ?? '?'} cores${cpu.speed ? ` @ ${cpu.speed} GHz` : ''}`,
+    label: 'CPU (จำนวน Core)',
+    value: `${cores} threads / ${hardware.cpu.physicalCores} cores${hardware.cpu.speedGhz ? ` @ ${hardware.cpu.speedGhz} GHz` : ''}`,
     status: coresOk ? 'pass' : coresWarn ? 'warn' : 'fail',
     note: coresOk ? 'เหมาะกับผู้เล่นหลายคนพร้อมกัน' : coresWarn ? 'ใช้ได้กับเซิร์ฟเวอร์ขนาดเล็ก' : 'น้อยเกินไปสำหรับเซิร์ฟเวอร์เกม',
   })
@@ -146,16 +211,11 @@ export async function getSystemSpecs(): Promise<SystemSpecs> {
     platform: process.platform,
     platformLabel:
       process.platform === 'win32' ? 'Windows' : process.platform === 'linux' ? 'Linux' : process.platform,
-    os: `${osInfo.distro} ${osInfo.release ?? ''}`.trim(),
-    kernel: osInfo.kernel ?? '',
+    os: `${hardware.osInfo.distro} ${hardware.osInfo.release}`.trim(),
+    kernel: hardware.osInfo.kernel,
     arch: process.arch,
     nodeVersion: process.version,
-    cpu: {
-      brand: `${cpu.manufacturer ?? ''} ${cpu.brand ?? ''}`.trim(),
-      cores,
-      physicalCores: cpu.physicalCores ?? cores,
-      speedGhz: Math.round((cpu.speed ?? 0) * 10) / 10,
-    },
+    cpu: hardware.cpu,
     mem: { totalGb, freeGb },
     disk: diskInfo ? { mount: diskInfo.mount, totalGb: gb(diskInfo.size), freeGb: diskFreeGb } : null,
     checks,
@@ -166,15 +226,43 @@ export async function getSystemSpecs(): Promise<SystemSpecs> {
   }
 }
 
+// คำนวณ CPU load แบบ native โดยใช้ os.cpus() (เร็วระดับ 0.01ms ไม่ต้องรัน WMI หรือ spawn process)
+let prevIdle = 0
+let prevTotal = 0
+let cachedCpuLoad = 0
+
+function sampleCpuLoad(): number {
+  const cpus = os.cpus()
+  let idle = 0
+  let total = 0
+  for (const c of cpus) {
+    idle += c.times.idle
+    total += c.times.user + c.times.nice + c.times.sys + c.times.idle + c.times.irq
+  }
+  if (prevTotal === 0) {
+    prevIdle = idle
+    prevTotal = total
+    return 0
+  }
+  const diffIdle = idle - prevIdle
+  const diffTotal = total - prevTotal
+  prevIdle = idle
+  prevTotal = total
+  if (diffTotal <= 0) return cachedCpuLoad
+  const pct = Math.round((1 - diffIdle / diffTotal) * 1000) / 10
+  cachedCpuLoad = Math.max(0, Math.min(100, pct))
+  return cachedCpuLoad
+}
+
 export async function getQuickMachineStats(): Promise<{
   cpuLoadPct: number | null
   memTotalGb: number | null
   memFreeGb: number | null
 }> {
-  const [load, mem] = await Promise.all([si.currentLoad(), si.mem()])
+  // ใช้ native node:os ทั้งหมด: ตอบกลับทันทีใน 0.01ms!
   return {
-    cpuLoadPct: Math.round(load.currentLoad * 10) / 10,
-    memTotalGb: gb(mem.total),
-    memFreeGb: gb(mem.available),
+    cpuLoadPct: sampleCpuLoad(),
+    memTotalGb: gb(os.totalmem()),
+    memFreeGb: gb(os.freemem()),
   }
 }

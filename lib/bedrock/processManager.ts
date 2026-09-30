@@ -4,7 +4,9 @@ import path from 'node:path'
 import { SERVER_DIR, serverBinaryPath } from '../paths'
 import { getDb, getSetting } from '../db'
 import { getPropertyValue } from './properties'
+import { autoConfigureAddonsAndWorld } from './addonManager'
 import type { PlayerInfo, ServerStatus, StatusSnapshot, WsServerMessage } from '../types'
+
 
 const MAX_LOG_LINES = 2000
 const MAX_STREAM_BUFFER = 64 * 1024
@@ -96,7 +98,22 @@ export class BedrockProcessManager {
     }
 
     this.setStatus('starting')
+
+    // ซิงค์คอนฟิก Addons, valid_known_packs.json, texturepack-required, และเปิด experiment gameplay ใน level.dat อัตโนมัติ
+    try {
+      const configRes = autoConfigureAddonsAndWorld()
+      if (configRes.experimentsEnabled) {
+        this.appendLog('[Dashboard] เปิดใช้งานการทดลอง (Experimental Gameplay) ในโลกปัจจุบันอัตโนมัติแล้ว')
+      }
+      if (configRes.texturepackRequired) {
+        this.appendLog('[Dashboard] บังคับให้ผู้เล่นดาวน์โหลด Resource Pack (texturepack-required=true)')
+      }
+    } catch (err) {
+      this.appendLog(`[Dashboard] คำเตือน: ซิงค์การตั้งค่า Addon/World ไม่สำเร็จ: ${err instanceof Error ? err.message : String(err)}`)
+    }
+
     const proc = spawn(serverBinaryPath(), [], {
+
       cwd: SERVER_DIR,
       env,
       stdio: ['pipe', 'pipe', 'pipe'],

@@ -55,7 +55,7 @@ function upsert(map: Map<string, VersionInfo>, version: string): VersionInfo {
 async function fetchFromLinksApi(): Promise<Map<string, VersionInfo>> {
   const res = await fetch(DOWNLOAD_LINKS_API, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(6_000),
   })
   if (!res.ok) throw new Error(`API ของ Mojang ตอบกลับด้วยสถานะ ${res.status}`)
   const body = (await res.json()) as {
@@ -78,7 +78,7 @@ async function fetchFromLinksApi(): Promise<Map<string, VersionInfo>> {
 async function fetchFromHistoryRepo(): Promise<Map<string, VersionInfo>> {
   const res = await fetch(VERSION_HISTORY_URL, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(6_000),
   })
   if (!res.ok) throw new Error(`คลังประวัติเวอร์ชันตอบกลับด้วยสถานะ ${res.status}`)
   const body = (await res.json()) as {
@@ -103,7 +103,7 @@ async function fetchFromHistoryRepo(): Promise<Map<string, VersionInfo>> {
 async function fetchFromDownloadPage(): Promise<Map<string, VersionInfo>> {
   const res = await fetch(DOWNLOAD_PAGE_URL, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'text/html' },
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(6_000),
     redirect: 'follow',
   })
   if (!res.ok) throw new Error(`เปิดหน้าดาวน์โหลดของ minecraft.net ไม่ได้ (HTTP ${res.status})`)
@@ -123,21 +123,28 @@ async function fetchFromDownloadPage(): Promise<Map<string, VersionInfo>> {
 }
 
 async function trySources(): Promise<Map<string, VersionInfo>> {
-  // รวมทุกแหล่งที่ตอบมาได้: ลิงก์จะถูกเติมเฉพาะช่องที่ยังว่าง (แหล่งแรกมีสิทธิ์ก่อน)
+  // ดึงทุกแหล่งพร้อมกัน (parallel) เพื่อความเร็วสูงสุด ไม่รอ timeout ทีละแหล่ง
+  const results = await Promise.allSettled([
+    fetchFromLinksApi(),
+    fetchFromHistoryRepo(),
+    fetchFromDownloadPage(),
+  ])
+
   const merged = new Map<string, VersionInfo>()
   const errors: string[] = []
-  for (const source of [fetchFromLinksApi, fetchFromHistoryRepo, fetchFromDownloadPage]) {
-    try {
-      const map = await source()
-      for (const [version, info] of map) {
+
+  for (const r of results) {
+    if (r.status === 'fulfilled') {
+      for (const [version, info] of r.value) {
         const item = upsert(merged, version)
         item.winUrl = item.winUrl ?? info.winUrl
         item.linuxUrl = item.linuxUrl ?? info.linuxUrl
       }
-    } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err))
+    } else {
+      errors.push(r.reason instanceof Error ? r.reason.message : String(r.reason))
     }
   }
+
   if (merged.size === 0) throw new Error(errors.join(' | ') || 'ไม่สามารถดึงรายการเวอร์ชันได้จากทุกแหล่ง')
   return merged
 }

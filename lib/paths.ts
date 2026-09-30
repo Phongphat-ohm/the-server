@@ -11,10 +11,10 @@ function resolveDir(envValue: string | undefined, fallback: string): string {
 export const DATA_DIR = resolveDir(process.env.DATA_DIR, 'data')
 /** โฟลเดอร์ติดตั้ง Bedrock Dedicated Server */
 export const SERVER_DIR = resolveDir(process.env.BDS_DIR, 'server_data')
-/** ที่เก็บไฟล์ .zip ที่กำลังดาวน์โหลด */
-export const DOWNLOADS_DIR = path.join(SERVER_DIR, '.downloads')
-/** ที่แตกไฟล์ชั่วคราวก่อน merge ลง SERVER_DIR */
-export const STAGING_DIR = path.join(SERVER_DIR, '.staging')
+/** ที่เก็บไฟล์ .zip ที่กำลังดาวน์โหลด (แยกไว้นอก SERVER_DIR เพื่อไม่ให้ปนกับไฟล์เกม และไม่โดนลบตอน Clean Wipe) */
+export const DOWNLOADS_DIR = path.join(DATA_DIR, 'downloads')
+/** ที่แตกไฟล์ชั่วคราวก่อน merge ลง SERVER_DIR (แยกไว้นอก SERVER_DIR) */
+export const STAGING_DIR = path.join(DATA_DIR, 'staging')
 
 export const SERVER_BINARY = process.platform === 'win32' ? 'bedrock_server.exe' : 'bedrock_server'
 

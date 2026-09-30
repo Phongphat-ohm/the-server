@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'admin',
   created_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS sessions (
@@ -46,6 +47,17 @@ function createBundle(): DbBundle {
   const sqlite = new Database(path.join(DATA_DIR, 'dashboard.db'))
   sqlite.pragma('journal_mode = WAL')
   sqlite.exec(CREATE_TABLES)
+
+  // Auto-migration: check if 'role' column exists in 'users'
+  try {
+    const cols = sqlite.pragma('table_info(users)') as Array<{ name: string }>
+    if (!cols.some((c) => c.name === 'role')) {
+      sqlite.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
+    }
+  } catch {
+    // Ignore migration failure if already exists or during init
+  }
+
   const db = drizzle(sqlite, { schema })
   return { sqlite, db }
 }

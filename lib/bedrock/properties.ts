@@ -68,3 +68,21 @@ export function getPropertyValue(key: string, fallback: string | null = null): s
   const value = values[key]
   return value === undefined || value === '' ? fallback : value
 }
+
+export function setPropertyValue(key: string, value: string): void {
+  const current = readServerProperties() ?? ''
+  const updated = updatePropertiesText(current, { [key]: value })
+  writeServerProperties(updated)
+}
+
+export function getWorldName(): string | null {
+  return getPropertyValue('level-name', 'Bedrock level')
+}
+
+export function getWorldDir(): string | null {
+  const worldName = getWorldName()
+  if (!worldName) return null
+  const dir = path.join(SERVER_DIR, 'worlds', worldName)
+  return fs.existsSync(dir) ? dir : null
+}
+

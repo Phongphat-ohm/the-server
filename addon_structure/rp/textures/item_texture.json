@@ -1,0 +1,12 @@
+{
+	"resource_pack_name": "terrain",
+	"texture_name": "atlas.items",
+	"texture_data": {
+		"map_placeholder": {
+			"textures": "textures/ui/blank"
+		},
+		"map_atlas": {
+			"textures": "textures/items/map_atlas"
+		}
+	}
+}

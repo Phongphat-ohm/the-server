@@ -9,10 +9,11 @@ export async function POST(req: NextRequest) {
   const denied = guard(req)
   if (denied) return denied
 
-  const body = (await req.json().catch(() => ({}))) as { version?: unknown }
+  const body = (await req.json().catch(() => ({}))) as { version?: unknown; freshInstall?: unknown }
   const version = typeof body.version === 'string' && body.version.trim() ? body.version.trim() : 'latest'
+  const freshInstall = Boolean(body.freshInstall)
   try {
-    const job = startInstall(version)
+    const job = startInstall(version, { freshInstall })
     return NextResponse.json({ job })
   } catch (err) {
     return jsonError(409, err instanceof Error ? err.message : 'เริ่มติดตั้งไม่สำเร็จ')

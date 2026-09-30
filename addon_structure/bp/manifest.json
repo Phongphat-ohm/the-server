@@ -1,0 +1,36 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Created by kamii",
+        "name": "Magnificent Minimap v1.7 Behavior",
+        "uuid": "ab8cfdca-bb53-4d48-8cd3-3a38687fbf9a",
+        "version": [ 1, 7, 0 ],
+        "min_engine_version": [ 1, 21, 0 ]
+    },
+    "modules": [
+        {
+            "description": "Created by kamii",
+            "type": "script",
+            "language": "javascript",
+            "uuid": "9d0526fa-6b58-4b54-b1cc-c042623579c7",
+            "version": [ 1, 7, 0 ],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+			"module_name": "@minecraft/server",
+			"version": "2.5.0"
+		},
+        {
+            "uuid": "8462e046-7643-4372-b7a1-ca8522fbf138",
+            "version": [1, 7, 0]
+        }
+    ],
+    "metadata": {
+        "authors": [
+            "Kamii"
+        ],
+        "product_type": "addon"
+    }
+}

@@ -164,6 +164,16 @@ async function main() {
     ok('คอมเมนต์เดิมถูกคงไว้', savedText.includes('# คอมเมนต์เดิมต้องอยู่ครบ'))
     ok('แก้ค่าถูกคีย์ + เพิ่มคีย์ใหม่ได้', savedText.includes('server-name=ชื่อใหม่') && savedText.includes('allow-cheats=true') && savedText.includes('max-players=25'))
 
+    // ---- Connection & Domain API ----
+    r = await api('GET', '/api/settings/connection')
+    ok('อ่านข้อมูล connection สำเร็จ', r.status === 200 && typeof r.body?.serverPort === 'number')
+
+    r = await api('POST', '/api/settings/connection', { domain: 'play.myserver.com:19132' })
+    ok('บันทึก custom domain สำเร็จ (ตัด port ออกอัตโนมัติ)', r.status === 200 && r.body?.connection?.domain === 'play.myserver.com' && r.body?.connection?.primaryHost === 'play.myserver.com')
+
+    r = await api('POST', '/api/settings/connection', { domain: '' })
+    ok('ล้าง custom domain สำเร็จ', r.status === 200 && r.body?.connection?.domain === null)
+
     // ---- Addons ----
     const manifest = {
       format_version: 2,

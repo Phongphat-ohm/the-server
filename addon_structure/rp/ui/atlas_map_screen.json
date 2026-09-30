@@ -1,0 +1,312 @@
+{
+    "namespace": "atlas_map",
+
+    "overlay": {
+        "type": "image",
+        "texture": "textures/ui/map_atlas_overlay",
+        "size": [ 320, 207 ],
+        "layer": 4
+    },
+
+    "pixel": {
+        "type": "label",
+        "text": "#text",
+        "font_scale_factor": 0.2,
+        "bindings": [
+            {
+                "binding_name": "#hover_text",
+                "binding_type": "collection",
+                "binding_collection_name": "container_items"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#hover_text - '\n')",
+                "target_property_name": "#text"
+            }
+        ]
+    },  
+    
+    "atlas_pixel": {
+        "type": "panel",
+        "size": ["100%cm", "100%cm"],
+        "controls": [
+			{
+				"pixel@atlas_map.pixel": {
+					"offset": [ 0, 0]
+				}
+			},
+			{
+				"pixel@atlas_map.pixel": {
+					"offset": [ 0, 0.5]
+				}
+			},
+			{
+				"pixel@atlas_map.pixel": {
+					"offset": [ 0.5, 0.5]
+				}
+			},
+			{
+				"pixel@atlas_map.pixel": {
+					"offset": [ 0.5, 0]
+				}
+			}
+        ]
+    },
+    
+    "atlas_screen": {
+        "type": "stack_panel",
+        "orientation": "vertical",
+        "size": [ "100%cm", "100%c" ],
+
+        "collection_name": "container_items",
+		"factory": {
+			"name": "atlas_generator_factory",
+			"control_name": "atlas_map.atlas_pixel"
+		},
+        "$count": 88,
+        "property_bag": {
+            "#count": "$count"
+        },
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_property_name": "#count",
+                "target_property_name": "#collection_length"
+            }
+        ]
+    }, 
+
+    "util_button@common.container_slot_button_prototype": {
+        "default_control": "default",
+        "hover_control": "hover",
+        "pressed_control": "default",
+        "button_mappings": [
+            {
+                "from_button_id": "button.menu_select",
+                "to_button_id": "button.drop_all",
+                "mapping_type": "pressed"
+            },
+            {
+                "from_button_id": "button.menu_ok",
+                "to_button_id": "button.drop_all",
+                "mapping_type": "pressed"
+            }
+        ],
+        "controls": [
+            {
+                "hover": {
+                    "type": "image",
+                    "size": [ 16, 16 ],
+                    "$texture_hover|default": "textures/ui/blank",
+                    "texture": "$texture_hover",
+                    "layer": 4
+                }
+            },
+            {
+                "default": {
+                    "type": "image",
+                    "size": [ 16, 16 ],
+                    "$texture|default": "textures/ui/blank",
+                    "texture": "$texture"
+                }
+            }
+        ]
+    },
+    
+    "empty": {
+        "type": "panel",
+        "size": [ 16, 16 ]
+    },
+    
+    "utility_item_background": {
+        "type": "image",
+        "size": [ 16, 16 ],
+        "$texture_pressed|default": "textures/ui/blank",
+        "texture": "$texture_pressed"
+    },
+
+    "utility_item@common.container_item": {
+        "size": [ 16, 16 ],
+        "$button_ref": "atlas_map.util_button",
+        "$item_renderer": "atlas_map.empty",
+        "$highlight_control": "atlas_map.empty",
+        "$background_images": "atlas_map.utility_item_background"
+    },
+    
+    "utility_panel_items": {
+        "type": "stack_panel",
+        "orientation": "horizontal",
+        "size": [ "100%c", "100%cm" ],
+
+        "collection_name": "container_items",
+        "$item_collection_name": "container_items",
+        "controls": [
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_zoom_in_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_zoom_in_hover",
+                    "$texture": "textures/ui/atlas_map_zoom_in",
+                    "collection_index": 88
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_zoom_out_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_zoom_out_hover",
+                    "$texture": "textures/ui/atlas_map_zoom_out",
+                    "collection_index": 89
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_move_left_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_move_left_hover",
+                    "$texture": "textures/ui/atlas_map_move_left",
+                    "collection_index": 90
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_move_right_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_move_right_hover",
+                    "$texture": "textures/ui/atlas_map_move_right",
+                    "collection_index": 91
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_move_up_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_move_up_hover",
+                    "$texture": "textures/ui/atlas_map_move_up",
+                    "collection_index": 92
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_move_down_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_move_down_hover",
+                    "$texture": "textures/ui/atlas_map_move_down",
+                    "collection_index": 93
+                }
+            },
+            {
+                "item@atlas_map.utility_item": {
+                    "$texture_pressed": "textures/ui/atlas_map_reset_pressed",
+                    "$texture_hover": "textures/ui/atlas_map_reset_hover",
+                    "$texture": "textures/ui/atlas_map_reset",
+                    "collection_index": 94
+                }
+            }
+        ]
+    },
+
+    "util_panel": {
+        "type": "image",
+        "texture": "textures/ui/atlas_map_scale",
+        "size": [ 135, 35 ],
+        "controls": [
+            {
+                "utility_panel_items@atlas_map.utility_panel_items": {
+                    "offset": [ 0, -1.5 ]
+                }
+            }
+        ]
+    }, 
+
+    "close_button": {
+        "type": "button",
+        "size": [ 18, 18 ],
+        "layer": 10,
+        "anchor_from": "top_right",
+        "anchor_to": "top_right",
+        "offset": [ -6, 6 ],
+        "locked_control": "",
+        "default_control": "default",
+        "hover_control": "hover",
+        "pressed_control": "default",
+        "sound_name": "random.click",
+        "sound_volume": 1.0,
+        "sound_pitch": 1.0,
+        "button_mappings": [
+            {
+                "from_button_id": "button.menu_select",
+                "to_button_id": "button.menu_exit",
+                "mapping_type": "pressed"
+            },
+            {
+                "from_button_id": "button.menu_ok",
+                "to_button_id": "button.menu_exit",
+                "mapping_type": "focused"
+            }
+        ],
+        "bindings": [
+            {
+                "binding_type": "none",
+                "binding_name": "#close_button_visible",
+                "binding_name_override": "#visible"
+            }
+        ],
+        "controls": [
+            {
+                "default": {
+                    "type": "image",
+                    "texture": "textures/ui/minimap_opened"
+                }
+            },
+            {
+                "hover": {
+                    "type": "image",
+                    "texture": "textures/ui/minimap_opened_hover"
+                }
+            }
+        ]
+    },
+
+    "atlas_map_panel": {
+        "type": "panel",
+        "controls": [
+            {
+                "root_panel@common.root_panel": {
+                    "layer": 1,
+                    "size": [ 320, 207 ],
+                    "controls": [
+                        {
+                            "close_button@atlas_map.close_button": {}
+                        },
+                        {
+                            "overlay@atlas_map.overlay": {}
+                        },
+                        {
+                            "renderer": {
+                                "type": "panel",
+                                "size": [ 288, 178 ],
+                                "offset": [ 0, -4.5 ],
+                                "clips_children": true,
+                                "controls": [
+                                    {
+                                        "atlas_screen@atlas_map.atlas_screen": {}
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "background": {
+                                "type": "image",
+                                "texture": "textures/ui/map_atlas_panel",
+                                "layer": -1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "util_panel@atlas_map.util_panel": {
+                    "anchor_from": "bottom_middle",
+                    "anchor_to": "bottom_middle",
+                    "offset": [ 0, -1 ],
+                    "layer": 5
+                }
+            }
+        ]
+    }
+}
